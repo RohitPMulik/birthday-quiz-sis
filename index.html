@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Happy Birthday, Sister! 🎉</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Confetti Script -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Background Gradient & Particle Canvas */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0c3fc, #8ec5fc);
+      text-align: center;
+      padding: 50px;
+      color: #333;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+    }
+    canvas#bgParticles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    h1 {
+      color: #7b2ff7;
+      margin-bottom: 10px;
+      animation: fadeSlideDown 1s ease forwards;
+      opacity: 0;
+    }
+
+    p.description {
+      animation: fadeSlideUp 1s ease forwards 0.3s;
+      opacity: 0;
+      margin-bottom: 20px;
+    }
+
+    #timer {
+      font-size: 1.2em;
+      color: #5a0bc3;
+      margin-bottom: 30px;
+      animation: fadeSlideUp 1s ease forwards 0.6s;
+      opacity: 0;
+    }
+
+    .quiz {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .question {
+      background: #f3e8ff;
+      border: 2px solid #7b2ff7;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation-fill-mode: forwards;
+    }
+
+    /* Staggered fade & slide for questions */
+    .question:nth-child(1) { animation: fadeSlideUp 0.8s ease forwards 0.8s; }
+    .question:nth-child(2) { animation: fadeSlideUp 0.8s ease forwards 1.1s; }
+    .question:nth-child(3) { animation: fadeSlideUp 0.8s ease forwards 1.4s; }
+    .question:nth-child(4) { animation: fadeSlideUp 0.8s ease forwards 1.7s; }
+    .question:nth-child(5) { animation: fadeSlideUp 0.8s ease forwards 2.0s; }
+
+    .options {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .option-btn {
+      flex: 1 1 45%;
+      padding: 12px 15px;
+      background-color: #7b2ff7;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+      box-shadow: 0 5px 15px rgba(123, 47, 247, 0.4);
+      user-select: none;
+    }
+    .option-btn:hover {
+      background-color: #9c54ff;
+      box-shadow: 0 7px 20px rgba(156, 84, 255, 0.7);
+    }
+    .option-btn.selected {
+      background-color: #b68cff;
+      box-shadow: 0 0 15px #b68cff;
+      font-weight: bold;
+    }
+
+    button.submit-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 14px 40px;
+      font-size: 1.2em;
+      background: #7b2ff7;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(123, 47, 247, 0.4);
+      animation: pulse 2s infinite;
+      transition: background-color 0.3s;
+    }
+    button.submit-btn:hover {
+      background-color: #9c54ff;
+      box-shadow: 0 7px 20px rgba(156, 84, 255, 0.7);
+    }
+
+    #quizFeedback {
+      color: #d32f2f;
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2em;
+      min-height: 1.4em;
+      opacity: 0;
+      animation-fill-mode: forwards;
+      text-align: center;
+    }
+    #quizFeedback.visible {
+      opacity: 1;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .birthday-message {
+      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 30px auto 0;
+      padding: 25px;
+      background: #f3e8ff;
+      border: 2px dashed #7b2ff7;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(123, 47, 247, 0.3);
+      animation-fill-mode: forwards;
+      animation: bounceIn 0.8s ease forwards 0.3s;
+      text-align: center;
+    }
+
+    .confetti {
+      font-size: 3em;
+      margin-top: 20px;
+      animation: fadeSlideUp 1s ease forwards 0.6s;
+      opacity: 0;
+    }
+
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 14px 35px;
+      background: #7b2ff7;
+      color: white;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 1.1em;
+      box-shadow: 0 5px 15px rgba(123, 47, 247, 0.5);
+      transition: background-color 0.3s;
+    }
+    a.button:hover {
+      background-color: #9c54ff;
+      box-shadow: 0 8px 25px rgba(156, 84, 255, 0.7);
+    }
+
+    /* Animations */
+    @keyframes fadeSlideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeSlideDown {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 5px 15px rgba(123, 47, 247, 0.4);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 10px 25px rgba(123, 47, 247, 0.7);
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.7);
+      }
+      60% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      80% {
+        transform: scale(0.95);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+  </style>
+</head>
+<body>
+
+  <canvas id="bgParticles"></canvas>
+
+  <!-- Background Music (autoplay after quiz) -->
+  <audio id="bgMusic" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-funkyelement.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
+
+  <h1>🎉 Birthday Brain Teaser for My Sister!</h1>
+  <p class="description">Answer all questions within <strong>120 seconds</strong> to unlock your surprise!</p>
+  <div id="timer">⏳ Time Left: 120s</div>
+
+  <!-- Quiz Section -->
+  <div class="quiz" id="quiz">
+
+    <div class="question">
+      <h3>1. In a room, there are 3 switches outside a closed room, and inside there are 3 bulbs — each switch corresponds to exactly one bulb. You can only enter the room once. How can you determine which switch controls which bulb?</h3>
+      <div class="options" data-question="q1">
+        <button class="option-btn" data-answer="A">A) Turn on switch 1 and 2, wait, then turn off switch 2 before entering</button>
+        <button class="option-btn" data-answer="B">B) Turn on switch 1, wait, turn on switch 2, enter the room immediately</button>
+        <button class="option-btn" data-answer="C">C) Turn on switch 3 only and enter the room immediately</button>
+        <button class="option-btn" data-answer="D">D) Impossible to determine with one entry</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <h3>2. You have 8 balls, 7 of them weigh the same, and 1 is heavier. Using a balance scale, what is the minimum number of weighings required to guarantee you find the heavier ball?</h3>
+      <div class="options" data-question="q2">
+        <button class="option-btn" data-answer="A">A) 1</button>
+        <button class="option-btn" data-answer="B">B) 2</button>
+        <button class="option-btn" data-answer="C">C) 3</button>
+        <button class="option-btn" data-answer="D">D) 4</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <h3>3. A sequence is defined as follows: 1, 4, 5, 6, 7, 9, 11... What is the 8th number?</h3>
+      <p><em>Hint: Think about numbers without a certain digit</em></p>
+      <div class="options" data-question="q3">
+        <button class="option-btn" data-answer="A">A) 12</button>
+        <button class="option-btn" data-answer="B">B) 13</button>
+        <button class="option-btn" data-answer="C">C) 14</button>
+        <button class="option-btn" data-answer="D">D) 15</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <h3>4. You are in a dark room with a candle, a wood stove, and a gas lamp. You only have one match. Which do you light first?</h3>
+      <div class="options" data-question="q4">
+        <button class="option-btn" data-answer="A">A) Candle</button>
+        <button class="option-btn" data-answer="B">B) Wood stove</button>
+        <button class="option-btn" data-answer="C">C) Gas lamp</button>
+        <button class="option-btn" data-answer="D">D) The match</button>
+      </div>
+    </div>
+
+    <div class="question">
+      <h3>5. There are three boxes: one contains only apples, one contains only oranges, and one contains both apples and oranges. The boxes are incorrectly labeled. How many boxes do you need to open to correctly label all of them?</h3>
+      <div class="options" data-question="q5">
+        <button class="option-btn" data-answer="A">A) 1</button>
+        <button class="option-btn" data-answer="B">B) 2</button>
+        <button class="option-btn" data-answer="C">C) 3</button>
+        <button class="option-btn" data-answer="D">D) 0</button>
+      </div>
+    </div>
+
+    <button class="submit-btn" onclick="checkQuiz()">Submit Answers</button>
+    <p id="quizFeedback"></p>
+  </div>
+
+  <!-- Birthday Message -->
+  <div class="birthday-message" id="birthdayMessage">
+    <div class="confetti">🎉🎈🎂🎁✨</div>
+    <h1>Happy Birthday Didi! 🎉</h1>
+    <p>You did it!</p>
+
+    <div class="gift-box">
+      <h2>🎁</h2>
+	  <p>On your special day, I wish you endless happiness, love, and success. May this year bring you all the joy you deserve and more. Thank you for being the amazing person you are—I’m so lucky to have you as my sister. Enjoy every moment of your day!</p>
+    
+      <!--<p>Click below to unwrap it:</p>
+      <a href="[LINK_TO_SISTER_GIFT]" class="button" target="_blank" rel="noopener noreferrer">Open Gift</a> -->
+    </div>
+
+    <p style="margin-top: 30px;">Love you tons — have an amazing day! 💜🥳</p>
+  </div>
+
+  <script>
+    // Background floating particles
+    const canvas = document.getElementById('bgParticles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray;
+
+    function initParticles() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particlesArray = [];
+
+      for (let i = 0; i < 60; i++) {
+        particlesArray.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 3 + 1,
+          speedX: (Math.random() - 0.5) * 0.5,
+          speedY: (Math.random() - 0.5) * 0.5,
+          opacity: Math.random() * 0.5 + 0.3
+        });
+      }
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesArray.forEach(p => {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.shadowColor = "rgba(255, 255, 255, 0.7)";
+        ctx.shadowBlur = 8;
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      updateParticles();
+    }
+
+    function updateParticles() {
+      particlesArray.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+
+        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+      });
+    }
+
+    function animateParticles() {
+      drawParticles();
+      requestAnimationFrame(animateParticles);
+    }
+
+    window.addEventListener('resize', initParticles);
+
+    initParticles();
+    animateParticles();
+
+    // Timer & Quiz Logic
+    let timeLeft = 120;
+    const timerEl = document.getElementById("timer");
+    const quizFeedback = document.getElementById("quizFeedback");
+
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerEl.textContent = `⏳ Time Left: ${timeLeft}s`;
+
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        timerEl.textContent = "⏳ Time's up!";
+        document.getElementById("quiz").style.pointerEvents = "none";
+        quizFeedback.textContent = "Time's up! Refresh the page to try again.";
+        quizFeedback.classList.add("visible");
+      }
+    }, 1000);
+
+    // Track selected answers
+    const selectedAnswers = {
+      q1: null,
+      q2: null,
+      q3: null,
+      q4: null,
+      q5: null
+    };
+
+    // Correct answers map
+    const correctAnswers = {
+      q1: "A",
+      q2: "B",
+      q3: "B",
+      q4: "D",
+      q5: "A"
+    };
+
+    // Add click listeners for options
+    document.querySelectorAll('.options').forEach(optionGroup => {
+      const q = optionGroup.dataset.question;
+      optionGroup.querySelectorAll('button.option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (timeLeft <= 0) return; // no selection after timeout
+          // Deselect other buttons in the same group
+          optionGroup.querySelectorAll('button.option-btn').forEach(b => {
+            b.classList.remove('selected');
+            b.style.backgroundColor = '#7b2ff7';
+          });
+          // Select clicked
+          btn.classList.add('selected');
+          btn.style.backgroundColor = '#b68cff';
+          selectedAnswers[q] = btn.dataset.answer;
+          quizFeedback.textContent = '';
+          quizFeedback.classList.remove('visible');
+        });
+      });
+    });
+
+    // Check Quiz Answers
+    function checkQuiz() {
+      if (timeLeft <= 0) return; // no submission after timeout
+
+      // Check if all answered
+      for (const q in selectedAnswers) {
+        if (!selectedAnswers[q]) {
+          quizFeedback.textContent = "Please answer all questions before submitting!";
+          quizFeedback.classList.add("visible");
+          return;
+        }
+      }
+
+      // Calculate score
+      let score = 0;
+      for (const q in selectedAnswers) {
+        if (selectedAnswers[q] === correctAnswers[q]) score++;
+      }
+
+      if (score === Object.keys(correctAnswers).length) {
+        // Passed quiz!
+        quizFeedback.textContent = "🎉 Perfect score! You passed!";
+        quizFeedback.style.color = "#4caf50";
+        quizFeedback.classList.add("visible");
+        clearInterval(countdown);
+        timerEl.style.display = "none";
+        document.getElementById("quiz").style.display = "none";
+        showBirthdayMessage();
+        playConfetti();
+        playMusic();
+      } else {
+        quizFeedback.textContent = `You got ${score} out of ${Object.keys(correctAnswers).length}. Try again!`;
+        quizFeedback.style.color = "#d32f2f";
+        quizFeedback.classList.add("visible");
+      }
+    }
+
+    // Show birthday message and gift
+    function showBirthdayMessage() {
+      const message = document.getElementById("birthdayMessage");
+      message.style.display = "block";
+    }
+
+    // Confetti effect
+    function playConfetti() {
+      const duration = 5 * 1000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      })();
+    }
+
+    // Play background music
+    function playMusic() {
+      const music = document.getElementById("bgMusic");
+      music.volume = 0.4;
+      music.play().catch(() => {
+        // Autoplay might be blocked by browser until user interacts
+      });
+    }
+  </script>
+</body>
+</html>
